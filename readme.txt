@@ -26,5 +26,5 @@ Also there is a complete documentation [here](https://raypay.ir/Plugins) which h
 Thank you so much for using RayPay Payment Gateway.
 
 == Changelog ==
-= 1.0, May 05, 2019 =
+= 1.0, May 05, 2021 =
 * First release.

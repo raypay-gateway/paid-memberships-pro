@@ -63,9 +63,6 @@ function load_raypay_pmpro_class()
             public function __construct($gateway = NULL)
             {
                 $this->gateway = $gateway;
-                $this->payment_endpoint = 'https://api.raypay.ir/raypay/api/v1/Payment/getPaymentTokenWithUserID';
-                $this->verify_endpoint = 'https://api.raypay.ir/raypay/api/v1/Payment/checkInvoice';
-
                 return $this->gateway;
             }
 
@@ -356,7 +353,7 @@ function load_raypay_pmpro_class()
                     'timeout' => 15,
                 );
 
-                $response = self::call_gateway_endpoint('http://185.165.118.211:14000/raypay/api/v1/Payment/getPaymentTokenWithUserID', $args);
+                $response = self::call_gateway_endpoint('https://api.raypay.ir/raypay/api/v1/Payment/getPaymentTokenWithUserID', $args);
                 if (is_wp_error($response)) {
                     $note           = sprintf(__('An Error accrued: %s', 'raypay-paid-memberships-pro'), $response->get_error_message() );
                     $morder->status = 'error';
@@ -429,7 +426,7 @@ function load_raypay_pmpro_class()
                         'headers' => $headers,
                         'timeout' => 15,
                     );
-                    $response = self::call_gateway_endpoint('http://185.165.118.211:14000/raypay/api/v1/Payment/checkInvoice?pInvoiceID=' . $invoice_id, $args);
+                    $response = self::call_gateway_endpoint('https://api.raypay.ir/raypay/api/v1/Payment/checkInvoice?pInvoiceID=' . $invoice_id, $args);
                     if ( is_wp_error($response) ) {
                         $note           = sprintf(__('An Error accrued: %s', 'raypay-paid-memberships-pro'), $response->get_error_message() );
                         $morder->status = 'error';
