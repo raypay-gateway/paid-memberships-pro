@@ -63,8 +63,8 @@ function load_raypay_pmpro_class()
             public function __construct($gateway = NULL)
             {
                 $this->gateway = $gateway;
-                $this->payment_endpoint = 'http://185.165.118.211:14000/raypay/api/v1/Payment/getPaymentTokenWithUserID';
-                $this->verify_endpoint = 'http://185.165.118.211:14000/raypay/api/v1/Payment/checkInvoice';
+                $this->payment_endpoint = 'https://api.raypay.ir/raypay/api/v1/Payment/getPaymentTokenWithUserID';
+                $this->verify_endpoint = 'https://api.raypay.ir/raypay/api/v1/Payment/checkInvoice';
 
                 return $this->gateway;
             }
