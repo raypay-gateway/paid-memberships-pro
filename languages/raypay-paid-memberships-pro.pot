@@ -51,7 +51,7 @@ msgid "User ID"
 msgstr ""
 
 #: raypay-paid-memberships-pro.php:204
-msgid "Acceptor Code"
+msgid "Marketing ID"
 msgstr ""
 
 

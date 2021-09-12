@@ -3,7 +3,7 @@
  * Plugin Name: RayPay Paid Memberships Pro
  * Description: RayPay payment gateway for Paid Memberships Pro
  * Author: Saminray
- * Version: 1.1.1
+ * Version: 1.0
  * License: GPL v2.0.
  * Author URI: https://saminray.com
  * Author Email: info@saminray.com
@@ -63,6 +63,9 @@ function load_raypay_pmpro_class()
             public function __construct($gateway = NULL)
             {
                 $this->gateway = $gateway;
+                $this->payment_endpoint = 'https://api.raypay.ir/raypay/api/v1/Payment/pay';
+                $this->verify_endpoint = 'https://api.raypay.ir/raypay/api/v1/Payment/verify';
+
                 return $this->gateway;
             }
 
@@ -175,7 +178,7 @@ function load_raypay_pmpro_class()
             {
                 $options = [
                     'raypay_user_id',
-                    'raypay_acceptor_code',
+                    'raypay_marketing_id',
                     'currency',
                 ];
 
@@ -251,18 +254,18 @@ function load_raypay_pmpro_class()
                     </th>
                     <td>
                         <input type="text" id="raypay_user_id"
-                               name="raypay_user_id" size="60"
+                               name="raypay_user_id" size="50"
                                value="<?php echo esc_attr($values['raypay_user_id']); ?>"
                         />
                     </td>
 
                     <th scope="row" valign="top">
-                        <label for="raypay_acceptor_code"><?php _e('Acceptor Code', 'raypay-paid-memberships-pro'); ?> :</label>
+                        <label for="raypay_marketing_id"><?php _e('Marketing ID', 'raypay-paid-memberships-pro'); ?> :</label>
                     </th>
                     <td>
-                        <input type="text" id="raypay_acceptor_code"
-                               name="raypay_acceptor_code" size="60"
-                               value="<?php echo esc_attr($values['raypay_acceptor_code']); ?>"
+                        <input type="text" id="raypay_marketing_id"
+                               name="raypay_marketing_id" size="50"
+                               value="<?php echo esc_attr($values['raypay_marketing_id']); ?>"
                         />
                     </td>
                 </tr>
@@ -313,10 +316,17 @@ function load_raypay_pmpro_class()
 
                 $morder->user_id = $user_id;
                 $morder->saveOrder();
-                
+
 
                 $raypay_user_id = pmpro_getOption('raypay_user_id');
-                $raypay_acceptor_code = pmpro_getOption('raypay_acceptor_code');
+                $raypay_marketing_id = pmpro_getOption('raypay_marketing_id');
+                $gtw_env = pmpro_getOption('gateway_environment');
+
+                if ($gtw_env == '' || $gtw_env == 'sandbox') {
+                    $sandbox = true;
+                } else {
+                    $sandbox = false;
+                }
 
                 $invoice_id = round(microtime(true)*1000) ;
 
@@ -325,7 +335,6 @@ function load_raypay_pmpro_class()
 
                 $order_id = $morder->code;
                 $callback = admin_url('admin-ajax.php') . '?action=raypay-ins&oid=' . $order_id;
-                $callback .= "&";
 
                 global $pmpro_currency;
                 $amount = intval($morder->subtotal);
@@ -338,9 +347,10 @@ function load_raypay_pmpro_class()
                     'userID' => $raypay_user_id,
                     'redirectUrl' => $callback,
                     'factorNumber' => $order_id,
-                    'acceptorCode' => $raypay_acceptor_code,
+                    'marketingID' => $raypay_marketing_id,
                     'email' => $email,
                     'fullName' => $customer_name,
+                    'enableSandBox' => $sandbox,
                 );
 
                 $headers = array(
@@ -353,7 +363,7 @@ function load_raypay_pmpro_class()
                     'timeout' => 15,
                 );
 
-                $response = self::call_gateway_endpoint('https://api.raypay.ir/raypay/api/v1/Payment/getPaymentTokenWithUserID', $args);
+                $response = self::call_gateway_endpoint('https://api.raypay.ir/raypay/api/v1/Payment/pay', $args);
                 if (is_wp_error($response)) {
                     $note           = sprintf(__('An Error accrued: %s', 'raypay-paid-memberships-pro'), $response->get_error_message() );
                     $morder->status = 'error';
@@ -375,11 +385,9 @@ function load_raypay_pmpro_class()
                     $morder->notes  = sprintf(__('An pending occurred while creating a transaction. pendding status: %s', 'raypay-paid-memberships-pro'), $http_status);
                     $morder->saveOrder();
 
-                    $access_token = $result->Data->Accesstoken;
-                    $terminal_id = $result->Data->TerminalID;
-
-                   self::raypay_send_data_shaparak($access_token , $terminal_id);
-
+                    $token = $result->Data;
+                    $link='https://my.raypay.ir/ipg?token=' . $token;
+                    wp_redirect($link);
                     exit;
                 } else {
                     $morder->status = 'error';
@@ -402,7 +410,6 @@ function load_raypay_pmpro_class()
                 }
 
                 $oid    = sanitize_text_field($_GET['oid']);
-                $invoice_id    = sanitize_text_field($_GET['?invoiceID']);
                 $morder = NULL;
                 try {
                     $morder = new MemberOrder($oid);
@@ -413,20 +420,16 @@ function load_raypay_pmpro_class()
                     exit;
                 }
 
-                    $data = array(
-                        'order_id' => $oid,
-                    );
-
                     $headers = array(
                         'Content-Type' => 'application/json',
                     );
 
-                    $args = array(
-                        'body' => json_encode($data),
-                        'headers' => $headers,
-                        'timeout' => 15,
-                    );
-                    $response = self::call_gateway_endpoint('https://api.raypay.ir/raypay/api/v1/Payment/checkInvoice?pInvoiceID=' . $invoice_id, $args);
+                $args = array(
+                    'body' => json_encode($_POST),
+                    'headers' => $headers,
+                    'timeout' => 15,
+                );
+                    $response = self::call_gateway_endpoint('https://api.raypay.ir/raypay/api/v1/Payment/verify' , $args);
                     if ( is_wp_error($response) ) {
                         $note           = sprintf(__('An Error accrued: %s', 'raypay-paid-memberships-pro'), $response->get_error_message() );
                         $morder->status = 'error';
@@ -458,13 +461,16 @@ function load_raypay_pmpro_class()
                     exit;
                 }
 
-                $state = $result->Data->State;
+                $state = $result->Data->Status;
+                $verify_invoice_id = $result->Data->invoiceID;
+                $verify_track_id = $result->Data->writheaderID;
 
                 if ($state === 1) {
 
-                    if ( self::do_level_up( $morder, $invoice_id ) ) {
-                        $note           =__('Payment has been verified.','raypay-paid-memberships-pro');
-                        $morder->notes  = $note . "<br>invoice_id: " . $invoice_id;
+                    if ( self::do_level_up( $morder, $verify_invoice_id ) ) {
+                        $note           =sprintf(__('Payment has been verified.   invoice id is: %s  track id is: %s','raypay-paid-memberships-pro') , $verify_invoice_id , $verify_track_id);
+                        $morder->notes = $note;
+                        //$morder->notes  = $note . "<br>invoice_id: " . print_r($verify_invoice_id, true) . "<br>track_id: " . print_r($verify_track_id, true);
                         $morder->saveOrder();
 
                         $redirect = pmpro_url('confirmation', '?level=' . $morder->membership_level->id . '&raypay_message='. $note );
@@ -623,14 +629,6 @@ function load_raypay_pmpro_class()
                 }
 
                 return $response;
-            }
-
-            public static function raypay_send_data_shaparak($access_token , $terminal_id){
-                echo '<form name="frmRayPayPayment" method="post" action=" https://mabna.shaparak.ir:8080/Pay ">';
-                echo '<input type="hidden" name="TerminalID" value="' . $terminal_id . '" />';
-                echo '<input type="hidden" name="token" value="' . $access_token . '" />';
-                echo '<input class="submit" type="submit" value="پرداخت" /></form>';
-                echo '<script>document.frmRayPayPayment.submit();</script>';
             }
     }
 }

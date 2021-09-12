@@ -14,17 +14,17 @@ RayPay is one of the Financial Technology providers in Iran and provides some pa
 
 == Installation ==
 
-After creating a web service on https://raypay.ir and getting an UserID and AcceptorCode, follow this instruction:
+After creating a web service on https://raypay.ir and getting an UserID and MarketingID, follow this instruction:
 
 1. Activate plugin RayPay for Paid Memberships Pro.
 2. Go to Memberships > Settings > Payment Gateway & SSL.
 3. In the Payment Gateway section, choose RayPay.
-5. Enter your UserID and AcceptorCode.
+5. Enter your UserID and MarketingID.
 
 Also there is a complete documentation [here](https://raypay.ir/Plugins) which helps you to install the plugin step by step.
 
 Thank you so much for using RayPay Payment Gateway.
 
 == Changelog ==
-= 1.0, May 05, 2021 =
+= 1.0, May 05, 2019 =
 * First release.

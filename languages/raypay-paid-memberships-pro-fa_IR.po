@@ -6,7 +6,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/raypay-paid-"
 "memberships-pro\n"
 "POT-Creation-Date: 2019-05-19T10:31:58+00:00\n"
-"PO-Revision-Date: 2021-05-11 10:26+0430\n"
+"PO-Revision-Date: 2021-09-12 16:15+0430\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fa_IR\n"
@@ -54,8 +54,8 @@ msgid "User ID"
 msgstr "شناسه کاربری"
 
 #: raypay-paid-memberships-pro.php:204
-msgid "Acceptor Code"
-msgstr "کد پذیرنده"
+msgid "Marketing ID"
+msgstr "شناسه کسب و کار"
 
 #: raypay-paid-memberships-pro.php:304
 msgid "An error occurred while creating a transaction. error status: %s"
@@ -84,3 +84,6 @@ msgstr "پرداخت ناموفق بوده است."
 
 msgid "An Error accrued doing level up."
 msgstr "هنگام تنظیم عضویت خطایی رخ داده است."
+
+#~ msgid "Acceptor Code"
+#~ msgstr "کد پذیرنده"
