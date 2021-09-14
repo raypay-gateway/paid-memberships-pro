@@ -462,8 +462,8 @@ function load_raypay_pmpro_class()
                 }
 
                 $state = $result->Data->Status;
-                $verify_invoice_id = $result->Data->invoiceID;
-                $verify_track_id = $result->Data->writheaderID;
+                $verify_invoice_id = $result->Data->InvoiceID;
+                $verify_track_id = $result->Data->WritheaderID;
 
                 if ($state === 1) {
 
